@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./db/query.sql"
+    schema: "./db/schema.sql"
+    gen:
+      go:
+        package: "sqlc"  # This is the package name
+        out: "./db/sqlc"  # This is the path where the generated code will be saved
+        sql_package: "pgx/v5"
