@@ -7,8 +7,7 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createEntry = `-- name: CreateEntry :exec
@@ -22,12 +21,12 @@ INSERT INTO entries (
 type CreateEntryParams struct {
 	AccountID int64
 	Amount    int64
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 // Create a new entry
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) error {
-	_, err := q.db.Exec(ctx, createEntry, arg.AccountID, arg.Amount, arg.CreatedAt)
+	_, err := q.db.ExecContext(ctx, createEntry, arg.AccountID, arg.Amount, arg.CreatedAt)
 	return err
 }
 
@@ -38,7 +37,7 @@ WHERE account_id = $1
 
 // Get entries by account ID
 func (q *Queries) GetEntriesByAccountID(ctx context.Context, accountID int64) ([]Entry, error) {
-	rows, err := q.db.Query(ctx, getEntriesByAccountID, accountID)
+	rows, err := q.db.QueryContext(ctx, getEntriesByAccountID, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +54,9 @@ func (q *Queries) GetEntriesByAccountID(ctx context.Context, accountID int64) ([
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -5,7 +5,9 @@
 package sqlc
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type Account struct {
@@ -13,7 +15,7 @@ type Account struct {
 	Owner     string
 	Balance   int64
 	Currency  string
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 type Entry struct {
@@ -21,18 +23,18 @@ type Entry struct {
 	AccountID int64
 	// can be negative or positive
 	Amount    int64
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 type Session struct {
-	ID           pgtype.UUID
+	ID           uuid.UUID
 	Username     string
 	RefreshToken string
 	UserAgent    string
 	ClientIp     string
 	IsBlocked    bool
-	ExpiresAt    pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
+	ExpiresAt    time.Time
+	CreatedAt    time.Time
 }
 
 type Transfer struct {
@@ -41,7 +43,7 @@ type Transfer struct {
 	ToAccountID   int64
 	// must be positive
 	Amount    int64
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 type User struct {
@@ -51,8 +53,8 @@ type User struct {
 	FullName          string
 	Email             string
 	IsEmailVerified   bool
-	PasswordChangedAt pgtype.Timestamptz
-	CreatedAt         pgtype.Timestamptz
+	PasswordChangedAt time.Time
+	CreatedAt         time.Time
 }
 
 type VerifyEmail struct {
@@ -61,6 +63,6 @@ type VerifyEmail struct {
 	Email      string
 	SecretCode string
 	IsUsed     bool
-	CreatedAt  pgtype.Timestamptz
-	ExpiredAt  pgtype.Timestamptz
+	CreatedAt  time.Time
+	ExpiredAt  time.Time
 }

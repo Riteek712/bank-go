@@ -7,8 +7,7 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createTransfer = `-- name: CreateTransfer :exec
@@ -23,12 +22,12 @@ type CreateTransferParams struct {
 	FromAccountID int64
 	ToAccountID   int64
 	Amount        int64
-	CreatedAt     pgtype.Timestamptz
+	CreatedAt     time.Time
 }
 
 // Create a new transfer
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) error {
-	_, err := q.db.Exec(ctx, createTransfer,
+	_, err := q.db.ExecContext(ctx, createTransfer,
 		arg.FromAccountID,
 		arg.ToAccountID,
 		arg.Amount,
@@ -45,7 +44,7 @@ LIMIT 1
 
 // Get transfer by ID
 func (q *Queries) GetTransferByID(ctx context.Context, id int64) (Transfer, error) {
-	row := q.db.QueryRow(ctx, getTransferByID, id)
+	row := q.db.QueryRowContext(ctx, getTransferByID, id)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,
@@ -69,7 +68,7 @@ type GetTransfersParams struct {
 
 // Get transfers by from_account_id and to_account_id
 func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]Transfer, error) {
-	rows, err := q.db.Query(ctx, getTransfers, arg.FromAccountID, arg.ToAccountID)
+	rows, err := q.db.QueryContext(ctx, getTransfers, arg.FromAccountID, arg.ToAccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +86,9 @@ func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]T
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

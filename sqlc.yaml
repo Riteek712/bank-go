@@ -7,4 +7,4 @@ sql:
       go:
         package: "sqlc"  # This is the package name
         out: "./db/sqlc"  # This is the path where the generated code will be saved
-        sql_package: "pgx/v5"
+        sql_package: "database/sql"

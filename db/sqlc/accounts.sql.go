@@ -7,8 +7,7 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createAccount = `-- name: CreateAccount :exec
@@ -23,12 +22,12 @@ type CreateAccountParams struct {
 	Owner     string
 	Balance   int64
 	Currency  string
-	CreatedAt pgtype.Timestamptz
+	CreatedAt time.Time
 }
 
 // Create a new account
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) error {
-	_, err := q.db.Exec(ctx, createAccount,
+	_, err := q.db.ExecContext(ctx, createAccount,
 		arg.Owner,
 		arg.Balance,
 		arg.Currency,
@@ -45,7 +44,7 @@ LIMIT 1
 
 // Get account by ID
 func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error) {
-	row := q.db.QueryRow(ctx, getAccountByID, id)
+	row := q.db.QueryRowContext(ctx, getAccountByID, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -65,7 +64,7 @@ LIMIT 1
 
 // Get account by owner
 func (q *Queries) GetAccountByOwner(ctx context.Context, owner string) (Account, error) {
-	row := q.db.QueryRow(ctx, getAccountByOwner, owner)
+	row := q.db.QueryRowContext(ctx, getAccountByOwner, owner)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -90,6 +89,6 @@ type UpdateAccountBalanceParams struct {
 
 // Update account balance
 func (q *Queries) UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) error {
-	_, err := q.db.Exec(ctx, updateAccountBalance, arg.Balance, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateAccountBalance, arg.Balance, arg.ID)
 	return err
 }

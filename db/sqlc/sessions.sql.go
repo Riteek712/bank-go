@@ -7,8 +7,9 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createSession = `-- name: CreateSession :exec
@@ -20,19 +21,19 @@ INSERT INTO sessions (
 `
 
 type CreateSessionParams struct {
-	ID           pgtype.UUID
+	ID           uuid.UUID
 	Username     string
 	RefreshToken string
 	UserAgent    string
 	ClientIp     string
 	IsBlocked    bool
-	ExpiresAt    pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
+	ExpiresAt    time.Time
+	CreatedAt    time.Time
 }
 
 // Create a new session
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
-	_, err := q.db.Exec(ctx, createSession,
+	_, err := q.db.ExecContext(ctx, createSession,
 		arg.ID,
 		arg.Username,
 		arg.RefreshToken,
@@ -52,8 +53,8 @@ LIMIT 1
 `
 
 // Get session by ID
-func (q *Queries) GetSessionByID(ctx context.Context, id pgtype.UUID) (Session, error) {
-	row := q.db.QueryRow(ctx, getSessionByID, id)
+func (q *Queries) GetSessionByID(ctx context.Context, id uuid.UUID) (Session, error) {
+	row := q.db.QueryRowContext(ctx, getSessionByID, id)
 	var i Session
 	err := row.Scan(
 		&i.ID,
@@ -76,11 +77,11 @@ WHERE id = $2
 
 type UpdateSessionBlockedParams struct {
 	IsBlocked bool
-	ID        pgtype.UUID
+	ID        uuid.UUID
 }
 
 // Update session blocking status
 func (q *Queries) UpdateSessionBlocked(ctx context.Context, arg UpdateSessionBlockedParams) error {
-	_, err := q.db.Exec(ctx, updateSessionBlocked, arg.IsBlocked, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateSessionBlocked, arg.IsBlocked, arg.ID)
 	return err
 }

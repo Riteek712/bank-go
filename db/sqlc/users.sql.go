@@ -7,8 +7,7 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :exec
@@ -26,13 +25,13 @@ type CreateUserParams struct {
 	FullName          string
 	Email             string
 	IsEmailVerified   bool
-	PasswordChangedAt pgtype.Timestamptz
-	CreatedAt         pgtype.Timestamptz
+	PasswordChangedAt time.Time
+	CreatedAt         time.Time
 }
 
 // Create a new user
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser,
+	_, err := q.db.ExecContext(ctx, createUser,
 		arg.Username,
 		arg.Role,
 		arg.HashedPassword,
@@ -53,7 +52,7 @@ LIMIT 1
 
 // Get a user by username
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByUsername, username)
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
 	var i User
 	err := row.Scan(
 		&i.Username,
@@ -76,6 +75,6 @@ WHERE username = $1
 
 // Update user's email verification status
 func (q *Queries) UpdateEmailVerified(ctx context.Context, username string) error {
-	_, err := q.db.Exec(ctx, updateEmailVerified, username)
+	_, err := q.db.ExecContext(ctx, updateEmailVerified, username)
 	return err
 }
